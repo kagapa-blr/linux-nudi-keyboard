@@ -1,0 +1,13 @@
+Source: ibus-nudi
+Section: utils
+Priority: optional
+Maintainer: Nudi Linux contributors <nudi@example.invalid>
+Build-Depends: debhelper-compat (= 13), cmake, g++, libglib2.0-dev, libgtk-3-dev, libibus-1.0-dev, pkg-config
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: ibus-nudi
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, ibus
+Description: Kannada Nudi input method for IBus
+ A system-wide Kannada Nudi keyboard input method for Ubuntu desktops.

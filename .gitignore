@@ -1,0 +1,18 @@
+# CMake build trees
+/build/
+/obj-*/
+/cmake-build-*/
+
+# Debian build output
+/debian/.debhelper/
+/debian/ibus-nudi/
+/debian/*debhelper.log
+/debian/*.substvars
+/debian/debhelper-build-stamp
+/debian/files
+
+# Packages and build metadata
+*.deb
+*.ddeb
+*.buildinfo
+*.changes
