@@ -64,7 +64,7 @@ jobs:
           fi
 
           semantic_version="${next_tag#v}"
-          debian_version="${semantic_version}-1"
+          debian_version="${semantic_version}"
           author_name="${GITHUB_ACTOR:-GitHub Actions}"
           author_email="${GITHUB_ACTOR:-github-actions[bot]}@users.noreply.github.com"
 

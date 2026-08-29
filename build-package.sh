@@ -51,8 +51,8 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 dpkg-buildpackage -us -uc -b
 
-version_no=$(dpkg-parsechangelog -S Version | sed 's/-.*$//')
-package_path=$(dirname "$project_dir")/kannada-nudi_${version_no}-1_amd64.deb
+version_no=$(dpkg-parsechangelog -S Version)
+package_path=$(dirname "$project_dir")/kannada-nudi_${version_no}_amd64.deb
 release_package=$(dirname "$project_dir")/kannada-nudi_${version_no}_amd64.deb
 if [ -f "$package_path" ] && [ "$package_path" != "$release_package" ]; then
     cp "$package_path" "$release_package"

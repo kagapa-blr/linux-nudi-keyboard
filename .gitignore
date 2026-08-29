@@ -9,8 +9,9 @@
 
 # Debian packaging generated files
 /debian/.debhelper/
-/debian/*
 /debian/kannada-nudi/
+/debian/ibus-nudi/
+/debian/kannada-nudi-linux-keyboard/
 /debian/*debhelper.log
 /debian/*.substvars
 /debian/debhelper-build-stamp
@@ -45,4 +46,3 @@ Thumbs.db
 /dist/
 /artifacts/
 /build-artifacts/
-debian/*
