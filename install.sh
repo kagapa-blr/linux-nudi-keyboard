@@ -12,7 +12,7 @@ if [ -z "$package" ]; then
     package=$(find "$(dirname "$0")/.." -maxdepth 1 -type f -name 'kannada-nudi_*.deb' -print -quit)
 fi
 if [ -z "$package" ] || [ ! -f "$package" ]; then
-    echo "Usage: $0 /path/to/kannada-nudi_1.0.0_amd64.deb" >&2
+    echo "Usage: $0 /path/to/kannada-nudi_1.0.5_amd64.deb" >&2
     exit 2
 fi
 
@@ -46,8 +46,24 @@ restart_ibus() {
     command -v ibus >/dev/null 2>&1 && ibus restart
 }
 
+wait_for_ibus() {
+    i=0
+    while [ "$i" -lt 20 ]; do
+        if ibus list-engine 2>/dev/null | grep -q '[[:space:]]nudi[[:space:]]'; then
+            return 0
+        fi
+        i=$((i + 1))
+    done
+    return 1
+}
+
 if restart_ibus; then
-    printf '%s\n' 'IBus is running.'
+    if wait_for_ibus; then
+        printf '%s\n' 'IBus is running.'
+    else
+        printf '%s\n' 'IBus did not become ready in this session.' >&2
+        exit 1
+    fi
     if command -v gsettings >/dev/null 2>&1 &&
         gsettings get org.gnome.desktop.input-sources sources |
         grep -q "('ibus', 'nudi')"; then

@@ -73,7 +73,7 @@ jobs:
             printf '\n'
             printf '  * Release %s.\n' "$next_tag"
             printf '\n'
-            printf ' -- %s <%s> %s\n' "$author_name" "$author_email" "$(date -R)"
+            printf ' -- %s <%s>  %s\n' "$author_name" "$author_email" "$(date -R)"
             printf '\n'
             cat debian/changelog
           } > debian/changelog.new && mv debian/changelog.new debian/changelog

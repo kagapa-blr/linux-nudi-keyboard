@@ -8,7 +8,7 @@ applications.
 
 1. Open the latest GitHub Release.
 2. Download the Debian package, for example:
-   `kannada-nudi_1.0.0_amd64.deb`
+	`kannada-nudi_1.0.5_amd64.deb`
 3. If an older `kannada-nudi` package is still installed, remove it first:
 
 ```sh
@@ -18,7 +18,7 @@ sudo apt purge -y kannada-nudi
 4. Install it:
 
 ```sh
-sudo apt install ./kannada-nudi_1.0.0_amd64.deb
+sudo apt install ./kannada-nudi_1.0.5_amd64.deb
 ```
 
 4. Ensure the user IBus daemon is running:
@@ -67,6 +67,17 @@ desktop input-source switcher. To stop the IBus session completely:
 ibus exit
 ```
 
+Runtime diagnostics are written to `/var/log/kannada-nudi/YYYY-MM-DD/`.
+Each desktop user has a separate `engine-UID.log` file; the logs record engine
+activity and key metadata, but not composed Kannada text.
+
+To inspect the latest log:
+
+```sh
+ls -ltr /var/log/kannada-nudi/"$(date +%F)"
+tail -f /var/log/kannada-nudi/"$(date +%F)"/engine-"$(id -u)".log
+```
+
 ## Use it in Ubuntu
 
 Open:
@@ -87,7 +98,7 @@ This works in supported Linux apps as a standard IBus input method.
 If you are testing a local build instead of a GitHub release, install it the same way:
 
 ```sh
-sudo apt install ./kannada-nudi_1.0.0-1_amd64.deb
+sudo apt install ./kannada-nudi_1.0.5-1_amd64.deb
 ibus-daemon --panel disable --xim --daemonize
 ```
 

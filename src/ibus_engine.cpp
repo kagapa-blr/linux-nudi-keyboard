@@ -2,6 +2,45 @@
 
 #include <ibus.h>
 
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <unistd.h>
+
+#include <glib/gstdio.h>
+
+namespace {
+
+std::string log_path() {
+    const std::time_t now = std::time(nullptr);
+    std::tm local_time{};
+    localtime_r(&now, &local_time);
+
+    std::ostringstream date;
+    date << std::put_time(&local_time, "%Y-%m-%d");
+    const std::string directory = "/var/log/kannada-nudi/" + date.str();
+    if (g_mkdir_with_parents(directory.c_str(), 0777) != 0) return {};
+    g_chmod(directory.c_str(), 01777);
+    return directory + "/engine-" + std::to_string(getuid()) + ".log";
+}
+
+void log_event(const std::string& event) {
+    const std::string path = log_path();
+    if (path.empty()) return;
+
+    std::ofstream log(path, std::ios::app);
+    if (!log) return;
+
+    const std::time_t now = std::time(nullptr);
+    std::tm local_time{};
+    localtime_r(&now, &local_time);
+    log << std::put_time(&local_time, "%Y-%m-%dT%H:%M:%S%z") << " " << event << '\n';
+}
+
+}  // namespace
+
 typedef struct _NudiEngine {
     IBusEngine parent;
     nudi::Composer* composer;
@@ -32,11 +71,13 @@ static void register_component(IBusBus* bus) {
         }
 
         ibus_bus_register_component(bus, component);
+        log_event("component_registered");
         g_object_unref(component);
         return;
     }
 
     g_printerr("Unable to locate IBus component metadata for Nudi.\n");
+    log_event("component_metadata_missing");
 }
 
 static void update_preedit(NudiEngine* engine) {
@@ -49,6 +90,7 @@ static void update_preedit(NudiEngine* engine) {
 
 static void nudi_engine_reset(IBusEngine* ibus_engine) {
     NudiEngine* engine = reinterpret_cast<NudiEngine*>(ibus_engine);
+    log_event("reset");
     engine->composer->reset();
     update_preedit(engine);
     IBUS_ENGINE_CLASS(nudi_engine_parent_class)->reset(ibus_engine);
@@ -57,6 +99,7 @@ static void nudi_engine_reset(IBusEngine* ibus_engine) {
 static gboolean nudi_engine_process_key_event(
     IBusEngine* ibus_engine, guint keyval, guint, guint state) {
     NudiEngine* engine = reinterpret_cast<NudiEngine*>(ibus_engine);
+    log_event("key keyval=" + std::to_string(keyval) + " state=" + std::to_string(state));
     if ((state & IBUS_RELEASE_MASK) != 0) return FALSE;
     const guint blocked = IBUS_CONTROL_MASK | IBUS_MOD1_MASK | IBUS_SUPER_MASK;
     if ((state & blocked) != 0 || keyval == IBUS_KEY_Caps_Lock || keyval == IBUS_KEY_Num_Lock)
@@ -76,6 +119,7 @@ static gboolean nudi_engine_process_key_event(
             g_object_unref(text);
             engine->composer->reset();
             update_preedit(engine);
+            log_event("commit separator");
         }
         return FALSE;
     }
@@ -90,6 +134,7 @@ static gboolean nudi_engine_process_key_event(
         IBusText* text = ibus_text_new_from_string(committed.c_str());
         ibus_engine_commit_text(ibus_engine, text);
         g_object_unref(text);
+        log_event("commit length=" + std::to_string(committed.size()));
     }
     update_preedit(engine);
     return TRUE;
@@ -97,12 +142,14 @@ static gboolean nudi_engine_process_key_event(
 
 static void nudi_engine_finalize(GObject* object) {
     NudiEngine* engine = reinterpret_cast<NudiEngine*>(object);
+    log_event("engine_finalized");
     delete engine->composer;
     G_OBJECT_CLASS(nudi_engine_parent_class)->finalize(object);
 }
 
 static void nudi_engine_init(NudiEngine* engine) {
     engine->composer = new nudi::Composer();
+    log_event("engine_initialized");
 }
 
 static void nudi_engine_class_init(NudiEngineClass* klass) {
@@ -114,9 +161,11 @@ static void nudi_engine_class_init(NudiEngineClass* klass) {
 }
 
 int main() {
+    log_event("engine_start");
     ibus_init();
     IBusBus* bus = ibus_bus_new();
     if (!ibus_bus_is_connected(bus)) {
+        log_event("ibus_connection_failed");
         g_object_unref(bus);
         return 1;
     }

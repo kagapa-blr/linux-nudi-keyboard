@@ -1,5 +1,7 @@
 #!/bin/sh
 set -e
 
+install -d -m 1777 /var/log/kannada-nudi
+
 #DEBHELPER#
 exit 0
