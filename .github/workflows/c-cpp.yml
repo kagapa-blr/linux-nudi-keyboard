@@ -61,14 +61,15 @@ jobs:
         shell: bash
         run: |
           dpkg-buildpackage -us -uc -b
-          ls -l ..
-          ls -l ../ibus-nudi_${{ steps.version.outputs.debian_version }}_amd64.deb
+          mkdir -p build-artifacts
+          cp ../kannada-nudi-linux-keyboard_${{ steps.version.outputs.debian_version }}_amd64.deb build-artifacts/
+          ls -l build-artifacts
 
       - name: Upload Debian artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ibus-nudi-deb
-          path: ../ibus-nudi_${{ steps.version.outputs.debian_version }}_amd64.deb
+          name: kannada-nudi-linux-keyboard-deb
+          path: build-artifacts/*.deb
 
   release:
     name: Publish GitHub Release
@@ -85,7 +86,7 @@ jobs:
       - name: Download Debian artifact
         uses: actions/download-artifact@v4
         with:
-          name: ibus-nudi-deb
+          name: kannada-nudi-linux-keyboard-deb
           path: dist
 
       - name: Create git tag if needed

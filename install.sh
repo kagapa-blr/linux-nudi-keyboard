@@ -9,10 +9,10 @@ fi
 
 package=${1:-}
 if [ -z "$package" ]; then
-    package=$(find "$(dirname "$0")/.." -maxdepth 1 -type f -name 'ibus-nudi_*.deb' -print -quit)
+    package=$(find "$(dirname "$0")/.." -maxdepth 1 -type f -name 'kannada-nudi-linux-keyboard_*.deb' -print -quit)
 fi
 if [ -z "$package" ] || [ ! -f "$package" ]; then
-    echo "Usage: $0 /path/to/ibus-nudi_VERSION_amd64.deb" >&2
+    echo "Usage: $0 /path/to/kannada-nudi-linux-keyboard_VERSION_amd64.deb" >&2
     exit 2
 fi
 

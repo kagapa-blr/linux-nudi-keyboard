@@ -1,19 +1,48 @@
-# CMake build trees
+# CMake / build directories
 /build/
 /obj-*/
 /cmake-build-*/
+/CMakeFiles/
+/CMakeCache.txt
+/CTestTestfile.cmake
+/Testing/
 
-# Debian build output
+# Debian packaging generated files
 /debian/.debhelper/
-/debian/ibus-nudi/
+/debian/*
+/debian/kannada-nudi-linux-keyboard/
 /debian/*debhelper.log
 /debian/*.substvars
 /debian/debhelper-build-stamp
 /debian/files
+/debian/*.build
+/debian/*.debhelper
+/debian/tmp/
 
-# Packages and build metadata
+# Generated package artifacts
 *.deb
 *.ddeb
 *.buildinfo
 *.changes
-temp/*
+*.tar.gz
+*.tar.xz
+
+# Temporary / local-only files
+/temp/
+/temp/*
+/.tmp/
+/.cache/
+*.log
+*.tmp
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local generated outputs kept outside source tree
+/dist/
+/artifacts/
+/build-artifacts/
+debian/*

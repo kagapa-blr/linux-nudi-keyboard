@@ -9,7 +9,7 @@ From your local project folder, or from the release location you are using for t
 Example local package name:
 
 ```sh
-ibus-nudi_1.0.0-1_amd64.deb
+kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ```
 
 Keep the `.deb` file in a folder you can access easily, such as your Downloads folder or the project directory.
@@ -19,13 +19,13 @@ Keep the `.deb` file in a folder you can access easily, such as your Downloads f
 Open a terminal and install it with:
 
 ```sh
-sudo apt install ./ibus-nudi_1.0.0-1_amd64.deb
+sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ```
 
 If you are installing from a different directory, use the full path instead:
 
 ```sh
-sudo apt install /path/to/ibus-nudi_1.0.0-1_amd64.deb
+sudo apt install /path/to/kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ```
 
 ## 3. Restart IBus
@@ -93,7 +93,7 @@ Then check the desktop input sources again and add Nudi Kannada manually.
 If it still does not appear, reinstall the package:
 
 ```sh
-sudo apt install --reinstall ./ibus-nudi_1.0.0-1_amd64.deb
+sudo apt install --reinstall ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ibus restart
 ```
 

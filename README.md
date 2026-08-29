@@ -11,7 +11,7 @@ Wayland.
 See the end-user guide in [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the local package installation flow. For a downloaded release, run:
 
 ```sh
-sudo apt install ./ibus-nudi_1.0.0-1_amd64.deb
+sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ibus restart
 ibus list-engine | grep -i nudi
 ```
@@ -24,7 +24,7 @@ post-install script restarts IBus when a user session is available.
 ```sh
 sudo apt install debhelper-compat cmake g++ libglib2.0-dev libgtk-3-dev libibus-1.0-dev pkg-config ibus
 dpkg-buildpackage -us -uc -b
-sudo apt install ../ibus-nudi_1.0.0-1_amd64.deb
+sudo apt install ../kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ```
 
 `./build-package.sh` checks these dependencies and installs any missing packages
