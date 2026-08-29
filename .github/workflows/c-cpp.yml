@@ -42,9 +42,40 @@ jobs:
         id: version
         shell: bash
         run: |
-          debian_version=$(dpkg-parsechangelog -S Version)
-          release_version=${debian_version%-*}
-          next_tag="v${release_version}"
+          git fetch --tags --force
+          latest_tag=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1 || true)
+          if [ -z "$latest_tag" ]; then
+            next_tag='v1.0.0'
+          else
+            version_no=${latest_tag#v}
+            if ! [[ "$version_no" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Invalid tag format: $latest_tag"
+              exit 1
+            fi
+            IFS='.' read -r major minor patch <<< "$version_no"
+            patch=$((patch + 1))
+            next_tag="v${major}.${minor}.${patch}"
+          fi
+
+          if git rev-parse --verify "$next_tag" >/dev/null 2>&1; then
+            echo "Tag $next_tag already exists. Refusing to overwrite an existing release."
+            exit 1
+          fi
+
+          debian_version="${next_tag#v}-1"
+          author_name="${GITHUB_ACTOR:-GitHub Actions}"
+          author_email="${GITHUB_ACTOR:-github-actions[bot]}@users.noreply.github.com"
+
+          {
+            printf '%s\n' "kannada-nudi-linux-keyboard (${debian_version}) unstable; urgency=medium"
+            printf '\n'
+            printf '  * Release %s.\n' "$next_tag"
+            printf '\n'
+            printf ' -- %s <%s> %s\n' "$author_name" "$author_email" "$(date -R)"
+            printf '\n'
+            cat debian/changelog
+          } > debian/changelog.new && mv debian/changelog.new debian/changelog
+
           echo "next_tag=$next_tag" >> "$GITHUB_OUTPUT"
           echo "debian_version=$debian_version" >> "$GITHUB_OUTPUT"
           echo "Release tag: $next_tag"
@@ -88,10 +119,12 @@ jobs:
         run: |
           git fetch --tags --force
           tag="${{ needs.build.outputs.next_tag }}"
-          if ! git rev-parse "$tag" >/dev/null 2>&1; then
-            git tag "$tag"
-            git push origin "$tag"
+          if git rev-parse --verify "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists locally. Refusing to overwrite an existing version."
+            exit 1
           fi
+          git tag "$tag"
+          git push origin "$tag"
           echo "Release tag is $tag"
 
       - name: Publish Debian package to GitHub Release
@@ -101,11 +134,11 @@ jobs:
         run: |
           gh --version
           tag="${{ needs.build.outputs.next_tag }}"
-          if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" \
-              --title "$tag" \
-              --notes "Kannada Nudi Linux Keyboard Debian package release for Ubuntu." \
-              dist/*.deb
-          else
-            gh release upload "$tag" dist/*.deb --clobber
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "GitHub release $tag already exists. Refusing to overwrite an existing release."
+            exit 1
           fi
+          gh release create "$tag" \
+            --title "$tag" \
+            --notes "Kannada Nudi Linux Keyboard Debian package release for Ubuntu." \
+            dist/*.deb
