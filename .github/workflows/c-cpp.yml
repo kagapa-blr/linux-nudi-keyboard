@@ -85,6 +85,18 @@ jobs:
           echo "Debian package version: $debian_version"
           echo "Release asset version: $semantic_version"
 
+      - name: Apply release version to project metadata
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.semantic_version }}
+        run: |
+          sed -i -E "s/(project\\(kannada-nudi VERSION )[0-9]+\\.[0-9]+\\.[0-9]+/\\1${RELEASE_VERSION}/" CMakeLists.txt
+          sed -i -E "s#(<version>)[0-9]+\\.[0-9]+\\.[0-9]+(</version>)#\\1${RELEASE_VERSION}\\2#" com.example.Nudi.xml
+
+          grep -q "project(kannada-nudi VERSION ${RELEASE_VERSION}" CMakeLists.txt
+          grep -q "<version>${RELEASE_VERSION}</version>" com.example.Nudi.xml
+          dpkg-parsechangelog -S Version | grep -qx "$RELEASE_VERSION"
+
       - name: Build Debian package
         shell: bash
         run: |

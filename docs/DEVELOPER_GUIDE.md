@@ -92,8 +92,10 @@ dpkg-deb -I ../kannada-nudi_1.0.0_amd64.deb | sed -n '/Package:/p;/Version:/p;/A
   marks.
 2. Add a regression assertion in `tests/test_composer.cpp` for every new key
   sequence or modifier layer.
-3. Update the version in `debian/changelog` and the download version in
-  `README.md` when preparing a release.
+3. For normal development pushes to `main`, no version edits are required. The
+  GitHub Actions release workflow increments the patch number, updates
+  `debian/changelog`, `CMakeLists.txt`, and `com.example.Nudi.xml`, then creates
+  the matching tag and `.deb` release asset.
 4. Run the complete local checks:
 
 ```sh
@@ -107,22 +109,28 @@ Do not commit the `build/` directory or generated `.deb` files.
 
 ## Publishing for Ubuntu users
 
-The repository workflow builds on Ubuntu 24.04. To publish a downloadable
-release from GitHub:
+The repository workflow builds on Ubuntu 24.04 and publishes a release for
+every push to `main`. Before pushing:
 
 ```sh
-git add src tests docs debian README.md CMakeLists.txt
-git commit -m "Release Nudi 1.0.1"
-git tag v1.0.1
+git status
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+git diff --check
+git add .
+git commit -m "Describe the Nudi change"
 git push origin main
-git push origin v1.0.1
 ```
 
-Pushing a `v*.*.*` tag starts `.github/workflows/package.yml`. It builds the
-Debian package, uploads it as a workflow artifact, and attaches it to a GitHub
-Release. Users can download that `.deb` without installing any developer
-dependencies. The tag, Debian changelog version, and package filename must
-match.
+The workflow finds the latest `vMAJOR.MINOR.PATCH` tag, increments `PATCH`,
+updates all release metadata, builds `kannada-nudi_<version>_amd64.deb`, creates
+the matching tag, and attaches the package to the GitHub Release. Do not create
+or push the release tag manually.
+
+For a manual release trigger, use GitHub Actions → Linux Debian Package Release
+→ Run workflow. A manually triggered workflow only builds the package; the
+release publication job runs for pushes to `main`.
 
 For a private or non-GitHub deployment, copy the generated `.deb` to a web or
 APT repository and give users the same `sudo apt install ./package.deb` command.
