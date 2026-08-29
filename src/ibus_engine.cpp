@@ -13,6 +13,32 @@ typedef struct _NudiEngineClass {
 
 G_DEFINE_TYPE(NudiEngine, nudi_engine, IBUS_TYPE_ENGINE)
 
+static void register_component(IBusBus* bus) {
+    static const char* candidates[] = {
+        "/usr/share/ibus/component/com.example.Nudi.xml",
+        "/usr/local/share/ibus/component/com.example.Nudi.xml",
+        "./com.example.Nudi.xml",
+        nullptr,
+    };
+
+    for (size_t i = 0; candidates[i] != nullptr; ++i) {
+        if (!g_file_test(candidates[i], G_FILE_TEST_EXISTS)) {
+            continue;
+        }
+
+        IBusComponent* component = ibus_component_new_from_file(candidates[i]);
+        if (component == nullptr) {
+            continue;
+        }
+
+        ibus_bus_register_component(bus, component);
+        g_object_unref(component);
+        return;
+    }
+
+    g_printerr("Unable to locate IBus component metadata for Nudi.\n");
+}
+
 static void update_preedit(NudiEngine* engine) {
     const std::string& value = engine->composer->preedit();
     IBusText* text = ibus_text_new_from_string(value.c_str());
@@ -94,6 +120,9 @@ int main() {
         g_object_unref(bus);
         return 1;
     }
+
+    register_component(bus);
+
     IBusFactory* factory = ibus_factory_new(ibus_bus_get_connection(bus));
     ibus_factory_add_engine(factory, "nudi", nudi_engine_get_type());
     ibus_main();

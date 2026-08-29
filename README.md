@@ -8,7 +8,7 @@ Wayland.
 
 ## Install a downloaded package
 
-Download `ibus-nudi_1.0.0-1_amd64.deb` from the project's Releases page, then run:
+See the end-user guide in [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the local package installation flow. For a downloaded release, run:
 
 ```sh
 sudo apt install ./ibus-nudi_1.0.0-1_amd64.deb

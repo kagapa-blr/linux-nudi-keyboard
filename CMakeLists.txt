@@ -27,3 +27,6 @@ enable_testing()
 add_executable(test-composer tests/test_composer.cpp)
 target_link_libraries(test-composer PRIVATE nudi-composer)
 add_test(NAME composer COMMAND test-composer)
+
+add_test(NAME ibus-registration
+    COMMAND sh ${CMAKE_SOURCE_DIR}/tests/check_ibus_registration.sh)
