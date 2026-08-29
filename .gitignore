@@ -16,3 +16,4 @@
 *.ddeb
 *.buildinfo
 *.changes
+temp/*
