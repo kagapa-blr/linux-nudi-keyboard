@@ -48,18 +48,15 @@ restart_ibus() {
 
 if restart_ibus; then
     printf '%s\n' 'IBus is running.'
-    if ibus engine nudi >/dev/null 2>&1; then
-        printf '%s\n' 'Nudi Kannada selected.'
-    else
-        printf '%s\n' 'IBus engine selection was unavailable; checking GNOME input sources.'
-    fi
     if command -v gsettings >/dev/null 2>&1 &&
         gsettings get org.gnome.desktop.input-sources sources |
-        grep -q "('ibus', 'nudi')" &&
-        gsettings set org.gnome.desktop.input-sources current 0 &&
-        gsettings set org.freedesktop.ibus.general engines-order "['nudi']" &&
-        gsettings set org.freedesktop.ibus.general preload-engines "['nudi']"; then
-        printf '%s\n' 'Nudi Kannada set as the active input source.'
+        grep -q "('ibus', 'nudi')"; then
+        gsettings set org.gnome.desktop.input-sources current 0
+        gsettings set org.freedesktop.ibus.general engines-order "['nudi']"
+        gsettings set org.freedesktop.ibus.general preload-engines "['nudi']"
+    fi
+    if ibus engine nudi >/dev/null 2>&1; then
+        printf '%s\n' 'Nudi Kannada selected.'
     else
         printf '%s\n' 'Add Nudi Kannada in Settings > Keyboard > Input Sources, then select it.'
     fi

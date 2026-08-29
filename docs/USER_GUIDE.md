@@ -46,6 +46,12 @@ If the daemon is already up, this is also safe:
 ibus restart
 ```
 
+Select Nudi in the current IBus session:
+
+```sh
+ibus engine nudi
+```
+
 Check that the engine is available:
 
 ```sh
@@ -58,7 +64,16 @@ You should see something like:
 nudi - Nudi Kannada
 ```
 
-## 4. Enable the keyboard in Ubuntu
+## 4. Stop Nudi
+
+To stop using Nudi, switch back to your normal keyboard layout from the
+desktop input-source switcher. To stop the IBus session completely:
+
+```sh
+ibus exit
+```
+
+## 5. Enable the keyboard in Ubuntu
 
 Open:
 
@@ -73,7 +88,7 @@ Then:
 
 You can now switch keyboard layouts with the normal GNOME input-source switcher.
 
-## 5. Start typing in Kannada
+## 6. Start typing in Kannada
 
 Once `Nudi Kannada` is selected, you can type in Kannada in supported applications such as:
 
@@ -83,7 +98,7 @@ Once `Nudi Kannada` is selected, you can type in Kannada in supported applicatio
 
 The keyboard works as a standard IBus input method and does not require a global keyboard hook.
 
-## 6. Open the built-in test editor
+## 7. Open the built-in test editor
 
 You can also launch the included editor for testing the composer directly:
 
@@ -93,7 +108,7 @@ nudi-editor
 
 This is useful for checking composition behavior before typing in other apps.
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 If the input method is not visible:
 
@@ -109,24 +124,6 @@ If it still does not appear, reinstall the package:
 ```sh
 sudo apt install --reinstall ./kannada-nudi_1.0.0_amd64.deb
 ibus-daemon --panel disable --xim --daemonize
-```
-
-## 8. How to stop using it
-
-To stop using Nudi temporarily:
-
-- switch back to your normal keyboard layout in Settings → Keyboard → Input Sources
-
-To fully stop the IBus session:
-
-```sh
-ibus exit
-```
-
-Then start it again with:
-
-```sh
-ibus restart
 ```
 
 ## 9. Notes

@@ -33,6 +33,12 @@ If you already have a session running, you can also use:
 ibus restart
 ```
 
+Select Nudi in the current IBus session:
+
+```sh
+ibus engine nudi
+```
+
 5. Confirm the engine is available:
 
 ```sh
@@ -43,6 +49,22 @@ You should see output similar to:
 
 ```text
 nudi - Nudi Kannada
+```
+
+## Start and stop Nudi
+
+Start the IBus session and select Nudi:
+
+```sh
+ibus-daemon --panel disable --xim --daemonize
+ibus engine nudi
+```
+
+To stop using Nudi, switch back to your normal keyboard layout from the
+desktop input-source switcher. To stop the IBus session completely:
+
+```sh
+ibus exit
 ```
 
 ## Use it in Ubuntu
