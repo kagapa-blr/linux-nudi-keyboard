@@ -1,52 +1,73 @@
-# Linux Nudi Keyboard
+# Kannada Nudi Linux Keyboard
 
-This project ports the Kannada Nudi keyboard to Ubuntu through IBus. The engine
-is implemented in C++ and IBus is a
-desktop input-method service, so the engine works in applications that support
-the standard Linux input-method protocol, including GTK and Qt applications on
-Wayland.
+This project brings the Kannada Nudi keyboard to Ubuntu through IBus. Once
+installed, it works as a normal desktop input method in supported GTK and Qt
+applications.
 
-## Install a downloaded package
+## Download and install
 
-See the end-user guide in [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the local package installation flow. For a downloaded release, run:
+1. Open the latest GitHub Release.
+2. Download the Debian package, for example:
+   `kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb`
+3. Install it:
+
+```sh
+sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
+```
+
+4. Restart IBus:
+
+```sh
+ibus restart
+```
+
+5. Confirm the engine is available:
+
+```sh
+ibus list-engine | grep -i nudi
+```
+
+You should see output similar to:
+
+```text
+nudi - Nudi Kannada
+```
+
+## Use it in Ubuntu
+
+Open:
+
+Settings → Keyboard → Input Sources
+
+Then:
+
+1. Click the `+` button
+2. Choose `Kannada`
+3. Select `Nudi Kannada`
+4. Start typing in Kannada
+
+This works in supported Linux apps as a standard IBus input method.
+
+## Local package install
+
+If you are testing a local build instead of a GitHub release, install it the same way:
 
 ```sh
 sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
 ibus restart
-ibus list-engine | grep -i nudi
 ```
 
-Add **Kannada Nudi** under **Settings > Keyboard > Input Sources**. The package
-post-install script restarts IBus when a user session is available.
+## Launch the built-in editor
 
-## Build and install the Debian package
-
-```sh
-sudo apt install debhelper-compat cmake g++ libglib2.0-dev libgtk-3-dev libibus-1.0-dev pkg-config ibus
-dpkg-buildpackage -us -uc -b
-sudo apt install ../kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
-```
-
-`./build-package.sh` checks these dependencies and installs any missing packages
-before building. After packaging, it asks whether to start the IBus engine.
-
-Restart the user IBus service, then open **Settings > Keyboard > Input Sources**
-and add **Kannada Nudi**. Select it with the normal GNOME input-source switcher.
-
-The engine is a user-session background process launched by IBus. No root-level
-keyboard hook or key injection is used, which is required for reliable Wayland
-support.
-
-## Nudi editor
-
-Launch the test editor after installing the package:
+You can also launch the included editor for testing the keyboard logic directly:
 
 ```sh
 nudi-editor
 ```
 
-The editor uses the same Nudi composer directly, shows the current composition
-state, and can restart the user-session IBus engine with **Start Nudi Engine**.
+The editor shows the current composition state and helps validate keyboard behavior.
+
+For the complete user walkthrough and troubleshooting steps, see [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 
 ## Developer build
 
