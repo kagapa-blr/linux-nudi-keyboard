@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -31,27 +31,20 @@ jobs:
             build-essential \
             cmake \
             debhelper-compat \
+            dpkg-dev \
             libglib2.0-dev \
             libgtk-3-dev \
             libibus-1.0-dev \
             pkg-config \
             ibus
 
-      - name: Determine next release tag
+      - name: Determine package and release version
         id: version
         shell: bash
         run: |
-          git fetch --tags --force
-          latest=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
-          if [ -z "$latest" ]; then
-            next_tag='v1.0.0'
-          else
-            version_no=${latest#v}
-            IFS='.' read -r major minor patch <<< "$version_no"
-            patch=$((patch + 1))
-            next_tag="v${major}.${minor}.${patch}"
-          fi
-          debian_version="${next_tag#v}-1"
+          debian_version=$(dpkg-parsechangelog -S Version)
+          release_version=${debian_version%-*}
+          next_tag="v${release_version}"
           echo "next_tag=$next_tag" >> "$GITHUB_OUTPUT"
           echo "debian_version=$debian_version" >> "$GITHUB_OUTPUT"
           echo "Release tag: $next_tag"
@@ -61,12 +54,13 @@ jobs:
         shell: bash
         run: |
           dpkg-buildpackage -us -uc -b
+          package_path=$(ls ../kannada-nudi-linux-keyboard_${{ steps.version.outputs.debian_version }}_amd64.deb)
           mkdir -p build-artifacts
-          cp ../kannada-nudi-linux-keyboard_${{ steps.version.outputs.debian_version }}_amd64.deb build-artifacts/
+          cp "$package_path" build-artifacts/
           ls -l build-artifacts
 
       - name: Upload Debian artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: kannada-nudi-linux-keyboard-deb
           path: build-artifacts/*.deb
@@ -79,12 +73,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Download Debian artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: kannada-nudi-linux-keyboard-deb
           path: dist
@@ -101,10 +95,17 @@ jobs:
           echo "Release tag is $tag"
 
       - name: Publish Debian package to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.build.outputs.next_tag }}
-          files: |
-            dist/*.deb
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh --version
+          tag="${{ needs.build.outputs.next_tag }}"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes "Kannada Nudi Linux Keyboard Debian package release for Ubuntu." \
+              dist/*.deb
+          else
+            gh release upload "$tag" dist/*.deb --clobber
+          fi
