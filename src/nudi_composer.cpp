@@ -6,6 +6,7 @@ namespace nudi {
 namespace {
 
 constexpr const char* virama = "್";
+constexpr const char* zwnj = "\xE2\x80\x8C";
 constexpr const char* zwj_virama = "\xE2\x80\x8D\xE0\xB3\x8D";
 
 struct Mapping {
@@ -85,12 +86,26 @@ void Composer::reset() {
     virama_pending_ = false;
 }
 
+std::string Composer::separator() {
+    if (virama_pending_) text_ += zwnj;
+    const std::string result = text_;
+    reset();
+    return result;
+}
+
 bool Composer::backspace() {
     if (text_.empty()) return false;
     if (text_.size() >= std::string(zwj_virama).size() &&
         text_.compare(text_.size() - std::string(zwj_virama).size(), std::string(zwj_virama).size(), zwj_virama) == 0) {
         text_.erase(text_.size() - std::string(zwj_virama).size());
         consonant_pending_ = true;
+        virama_pending_ = true;
+        return true;
+    }
+    if (text_.size() >= std::string(zwnj).size() &&
+        text_.compare(text_.size() - std::string(zwnj).size(), std::string(zwnj).size(), zwnj) == 0) {
+        text_.erase(text_.size() - std::string(zwnj).size());
+        consonant_pending_ = false;
         virama_pending_ = true;
         return true;
     }
@@ -101,13 +116,45 @@ bool Composer::backspace() {
     return true;
 }
 
-std::string Composer::feed(char key, bool shifted, bool caps_lock, bool scroll_lock) {
-    if (scroll_lock && std::isdigit(static_cast<unsigned char>(key))) return std::string(1, key);
+std::string Composer::feed(char key, bool shifted, bool caps_lock, bool scroll_lock,
+                           bool num_lock, bool alt) {
+    if (scroll_lock && std::isdigit(static_cast<unsigned char>(key))) {
+        reset();
+        return std::string(1, key);
+    }
+    if (num_lock && std::isdigit(static_cast<unsigned char>(key))) {
+        reset();
+        const char* digit = kannada_digit(key);
+        return digit == nullptr ? std::string(1, key) : digit;
+    }
+    if (num_lock && key == '`') {
+        reset();
+        return shifted ? "~" : "ʻ";
+    }
+    if (num_lock && key == '\'') {
+        reset();
+        return "’";
+    }
+    if (num_lock && key == ',') {
+        reset();
+        return ",";
+    }
+    if (shifted && !consonant_pending_ && !virama_pending_) {
+        if (key == 'h') return "ಃ";
+        if (key == 'm') return "ಂ";
+        if (key == 'x') return "಼";
+        if (key == '[' || key == ']') return "ೢ";
+    }
     if (caps_lock) {
-        if (key == '\'') {
-            const std::string quote = quote_right_ ? "’" : "‘";
-            quote_right_ = !quote_right_;
-            return text_ + quote;
+        if (alt && shifted && key == 'a') {
+            const std::string result = text_ + "ೱ";
+            reset();
+            return result;
+        }
+        if (alt && shifted && key == 'z') {
+            const std::string result = text_ + "ೲ";
+            reset();
+            return result;
         }
         const std::string symbol = caps_symbol(key, shifted);
         const std::string result = text_ + symbol;
@@ -136,7 +183,27 @@ std::string Composer::feed(char key, bool shifted, bool caps_lock, bool scroll_l
         virama_pending_ = true;
         return {};
     }
+    if (key == 'f' && virama_pending_) {
+        text_ += zwnj;
+        reset();
+        return {};
+    }
     if (consonant_pending_) {
+        if (shifted && key == 'h') {
+            text_ += "ಃ";
+            reset();
+            return {};
+        }
+        if (shifted && key == 'm') {
+            text_ += "ಂ";
+            reset();
+            return {};
+        }
+        if (shifted && key == 'x') {
+            text_ += "಼";
+            reset();
+            return {};
+        }
         const char* sign = shifted
             ? lookup(shifted_vowel_signs, std::size(shifted_vowel_signs), key)
             : lookup(vowel_signs, std::size(vowel_signs), key);
@@ -149,6 +216,7 @@ std::string Composer::feed(char key, bool shifted, bool caps_lock, bool scroll_l
     }
     const Mapping shifted_vowels[] = {
         {'a', "ಆ"}, {'e', "ಏ"}, {'i', "ಈ"}, {'o', "ಓ"}, {'u', "ಊ"},
+        {'r', "ಋ"}, {'y', "ಐ"},
     };
     const char* vowel = shifted
         ? lookup(shifted_vowels, std::size(shifted_vowels), key)

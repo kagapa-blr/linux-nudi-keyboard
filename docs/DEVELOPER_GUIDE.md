@@ -72,17 +72,21 @@ Build a local package:
 dpkg-buildpackage -us -uc -b
 ```
 
-For a single command after dependencies are installed:
+For local development, use the single command below. It builds the project,
+runs the tests, creates and installs the `.deb`, restarts IBus, waits for the
+engine to register, and selects Nudi:
 
 ```sh
 ./build-package.sh
 ```
 
-The package is written one directory above the repository. Inspect its runtime
-dependencies before installing it:
+The package and related Debian artifacts are written to the repository's
+`output/` directory. The script requires the current user to have `sudo` access
+and must not be run with `sudo` itself.
+Inspect the package's runtime dependencies if needed:
 
 ```sh
-dpkg-deb -I ../kannada-nudi_1.0.0_amd64.deb | sed -n '/Package:/p;/Version:/p;/Architecture:/p;/Depends:/p'
+dpkg-deb -I output/kannada-nudi_1.0.0_amd64.deb | sed -n '/Package:/p;/Version:/p;/Architecture:/p;/Depends:/p'
 ```
 
 ## Updating the keyboard
@@ -96,7 +100,8 @@ dpkg-deb -I ../kannada-nudi_1.0.0_amd64.deb | sed -n '/Package:/p;/Version:/p;/A
   GitHub Actions release workflow increments the patch number, updates
   `debian/changelog`, `CMakeLists.txt`, and `com.example.Nudi.xml`, then creates
   the matching tag and `.deb` release asset.
-4. Run the complete local checks:
+4. Run the complete local checks, or use `./build-package.sh` for the full local
+  build-and-run flow:
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
@@ -132,9 +137,76 @@ For a manual release trigger, use GitHub Actions → Linux Debian Package Releas
 → Run workflow. A manually triggered workflow only builds the package; the
 release publication job runs for pushes to `main`.
 
-For a private or non-GitHub deployment, copy the generated `.deb` to a web or
-APT repository and give users the same `sudo apt install ./package.deb` command.
-Do not distribute the build directory or compiler dependencies to end users.
+## Publishing to an APT repository
+
+GitHub Releases do not provide an APT repository. To let Ubuntu users install
+Nudi with `sudo apt install kannada-nudi`, publish the package through a PPA or
+another APT repository. A Launchpad PPA is the simplest option for Ubuntu.
+
+### One-time Launchpad setup
+
+1. Create a PPA on Launchpad, for example `ppa:YOUR_LAUNCHPAD_ID/nudi`.
+2. Configure a GPG key for uploading packages to Launchpad.
+3. Install the packaging tools:
+
+```sh
+sudo apt update
+sudo apt install devscripts debhelper dput
+```
+
+### Upload each release
+
+The package version in `debian/changelog` must be higher than the version
+already in the PPA. The GitHub workflow generates its changelog in the build
+runner and does not commit that temporary file to `main`, so prepare the PPA
+source package from the matching release tag:
+
+```sh
+git pull origin main
+git fetch --tags
+git checkout <release-tag>
+version=<version>
+dch --newversion "$version" --distribution unstable "Release v$version for PPA."
+sed -i -E "s/(project\\(kannada-nudi VERSION )[0-9]+\\.[0-9]+\\.[0-9]+/\\1${version}/" CMakeLists.txt
+sed -i -E "s#(<version>)[0-9]+\\.[0-9]+\\.[0-9]+(</version>)#\\1${version}\\2#" com.example.Nudi.xml
+dpkg-buildpackage -S -sa
+dput ppa:YOUR_LAUNCHPAD_ID/nudi ../kannada-nudi_${version}_source.changes
+```
+
+Replace `<release-tag>` and `<version>` with the actual release values, such
+as `v1.0.2` and `1.0.2`. These commands modify the detached local checkout only;
+do not commit or push those generated PPA metadata changes. Wait for Launchpad
+to finish building the package for the required Ubuntu series before asking
+users to install it. Check the build status on the PPA page and confirm the
+package is published.
+
+### User installation from the PPA
+
+Users add the PPA once, then install or upgrade Nudi normally:
+
+```sh
+sudo add-apt-repository ppa:YOUR_LAUNCHPAD_ID/nudi
+sudo apt update
+sudo apt install kannada-nudi
+```
+
+Future releases only require:
+
+```sh
+sudo apt update
+sudo apt upgrade kannada-nudi
+```
+
+Users can verify the repository and available version with:
+
+```sh
+apt-cache policy kannada-nudi
+```
+
+For a private or non-Launchpad deployment, publish the `.deb` and its APT
+metadata through a signed repository, then give users the repository setup
+command followed by `sudo apt install kannada-nudi`. Do not distribute the
+build directory or compiler dependencies to end users.
 
 ## Runtime debugging
 

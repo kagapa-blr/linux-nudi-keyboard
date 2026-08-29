@@ -101,8 +101,12 @@ static gboolean nudi_engine_process_key_event(
     NudiEngine* engine = reinterpret_cast<NudiEngine*>(ibus_engine);
     log_event("key keyval=" + std::to_string(keyval) + " state=" + std::to_string(state));
     if ((state & IBUS_RELEASE_MASK) != 0) return FALSE;
-    const guint blocked = IBUS_CONTROL_MASK | IBUS_MOD1_MASK | IBUS_SUPER_MASK;
-    if ((state & blocked) != 0 || keyval == IBUS_KEY_Caps_Lock || keyval == IBUS_KEY_Num_Lock)
+    const guint blocked = IBUS_CONTROL_MASK | IBUS_SUPER_MASK;
+    const bool shifted = (state & IBUS_SHIFT_MASK) != 0;
+    const bool caps_lock = (state & IBUS_LOCK_MASK) != 0;
+    const bool alt = (state & IBUS_MOD1_MASK) != 0;
+    if ((state & blocked) != 0 || (alt && !(caps_lock && shifted)) ||
+        keyval == IBUS_KEY_Caps_Lock || keyval == IBUS_KEY_Num_Lock)
         return FALSE;
 
     if (keyval == IBUS_KEY_BackSpace) {
@@ -111,9 +115,18 @@ static gboolean nudi_engine_process_key_event(
         return TRUE;
     }
 
-    if (keyval == IBUS_KEY_space || keyval == IBUS_KEY_Return || keyval == IBUS_KEY_KP_Enter) {
+    if (keyval == IBUS_KEY_Delete) {
+        if (engine->composer->empty()) return FALSE;
+        engine->composer->reset();
+        update_preedit(engine);
+        log_event("delete_preedit");
+        return TRUE;
+    }
+
+    if (keyval == IBUS_KEY_space || keyval == IBUS_KEY_Return || keyval == IBUS_KEY_KP_Enter ||
+        keyval == IBUS_KEY_Tab) {
         if (!engine->composer->empty()) {
-            const std::string value = engine->composer->preedit();
+            const std::string value = engine->composer->separator();
             IBusText* text = ibus_text_new_from_string(value.c_str());
             ibus_engine_commit_text(ibus_engine, text);
             g_object_unref(text);
@@ -121,15 +134,18 @@ static gboolean nudi_engine_process_key_event(
             update_preedit(engine);
             log_event("commit separator");
         }
+        if (keyval == IBUS_KEY_Tab || keyval == IBUS_KEY_space ||
+            keyval == IBUS_KEY_Return || keyval == IBUS_KEY_KP_Enter)
+            return FALSE;
         return FALSE;
     }
 
     if (keyval < 0x20 || keyval > 0x7e) return FALSE;
-    const bool shifted = (state & IBUS_SHIFT_MASK) != 0;
-    const bool caps_lock = (state & IBUS_LOCK_MASK) != 0;
     const bool scroll_lock = (state & IBUS_MOD3_MASK) != 0;
+    const bool num_lock = (state & IBUS_MOD2_MASK) != 0;
     const char key = static_cast<char>(g_ascii_tolower(static_cast<gchar>(keyval)));
-    const std::string committed = engine->composer->feed(key, shifted, caps_lock, scroll_lock);
+    const std::string committed = engine->composer->feed(
+        key, shifted, caps_lock, scroll_lock, num_lock, alt);
     if (!committed.empty()) {
         IBusText* text = ibus_text_new_from_string(committed.c_str());
         ibus_engine_commit_text(ibus_engine, text);

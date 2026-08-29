@@ -4,17 +4,15 @@ set -eu
 project_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 cd "$project_dir"
 
-install_package=false
 case "${1:-}" in
 	"") ;;
-	--install) install_package=true ;;
 	--help|-h)
-		printf '%s\n' "Usage: $0 [--install]"
-	printf '%s\n' '  --install  build, install the package, and refresh the user IBus session'
+		printf '%s\n' "Usage: $0"
+		printf '%s\n' '  Build, test, install, and activate Nudi for local development.'
 		exit 0
 		;;
 	*)
-		printf '%s\n' "Usage: $0 [--install]" >&2
+		printf '%s\n' "Usage: $0" >&2
 		exit 2
 		;;
 esac
@@ -49,18 +47,64 @@ fi
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
+ctest --test-dir build --output-on-failure
 dpkg-buildpackage -us -uc -b
 
 version_no=$(dpkg-parsechangelog -S Version)
-package_path=$(dirname "$project_dir")/kannada-nudi_${version_no}_amd64.deb
-release_package=$(dirname "$project_dir")/kannada-nudi_${version_no}_amd64.deb
-if [ -f "$package_path" ] && [ "$package_path" != "$release_package" ]; then
-    cp "$package_path" "$release_package"
+output_dir="$project_dir/output"
+mkdir -p "$output_dir"
+find "$(dirname "$project_dir")" -maxdepth 1 -type f \( \
+	-name 'kannada-nudi*.deb' -o \
+	-name 'kannada-nudi*.ddeb' -o \
+	-name 'kannada-nudi*.buildinfo' -o \
+	-name 'kannada-nudi*.changes' \
+\) -exec mv -t "$output_dir" {} +
+package_path="$output_dir/kannada-nudi_${version_no}_amd64.deb"
+printf '%s\n' "Package written to $package_path"
+if [ "$(id -u)" -eq 0 ]; then
+	printf '%s\n' 'Run this script as your desktop user, without sudo.' >&2
+	exit 1
 fi
-printf '%s\n' "Package written to $release_package"
-if "$install_package"; then
-	"$project_dir/install.sh" "$release_package"
+
+sudo apt install --reinstall "$package_path"
+
+if ! ibus list-engine >/dev/null 2>&1; then
+	ibus-daemon --panel disable --xim --replace --daemonize
 else
-	printf '%s\n' "Install it with: sudo apt install $release_package"
-	printf '%s\n' 'Then run install.sh or restart IBus as the desktop user and select Kannada Nudi.'
+	ibus restart || true
 fi
+
+i=0
+while [ "$i" -lt 20 ]; do
+	if ibus list-engine 2>/dev/null | grep -q '[[:space:]]nudi[[:space:]]'; then
+		break
+	fi
+	i=$((i + 1))
+	sleep 1
+done
+if [ "$i" -eq 20 ]; then
+	printf '%s\n' 'IBus did not register Nudi in this session.' >&2
+	exit 1
+fi
+
+if command -v gsettings >/dev/null 2>&1 &&
+	gsettings get org.gnome.desktop.input-sources sources |
+	grep -q "('ibus', 'nudi')"; then
+	gsettings set org.gnome.desktop.input-sources current 0
+	gsettings set org.freedesktop.ibus.general engines-order "['nudi']"
+	gsettings set org.freedesktop.ibus.general preload-engines "['nudi']"
+fi
+
+i=0
+while [ "$i" -lt 10 ]; do
+	if ibus engine nudi >/dev/null 2>&1 && [ "$(ibus engine 2>/dev/null)" = "nudi" ]; then
+		break
+	fi
+	i=$((i + 1))
+	sleep 1
+done
+if [ "$i" -eq 10 ]; then
+	printf '%s\n' 'Nudi was registered but could not be selected in this session.' >&2
+	exit 1
+fi
+printf '%s\n' 'Local build, tests, installation, and IBus activation completed.'
