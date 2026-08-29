@@ -9,8 +9,8 @@ Rules-Requires-Root: no
 Package: kannada-nudi
 Architecture: amd64
 Depends: ${shlibs:Depends}, ${misc:Depends}, ibus
-Conflicts: ibus-nudi
-Replaces: ibus-nudi
-Breaks: ibus-nudi (<< 1.0.1-1)
+Conflicts: ibus-nudi, kannada-nudi-linux-keyboard
+Replaces: ibus-nudi, kannada-nudi-linux-keyboard
+Breaks: ibus-nudi (<< 1.0.1-1), kannada-nudi-linux-keyboard (<< 1.0.1-1)
 Description: Kannada Nudi Linux keyboard input method
  A system-wide Kannada Nudi keyboard input method for Ubuntu desktops.

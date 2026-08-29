@@ -21,6 +21,11 @@ if dpkg-query -W -f='${Status}' ibus-nudi 2>/dev/null | grep -q 'install ok inst
     sudo apt purge -y ibus-nudi
 fi
 
+if dpkg-query -W -f='${Status}' kannada-nudi-linux-keyboard 2>/dev/null | grep -q 'install ok installed'; then
+    echo 'Removing legacy kannada-nudi-linux-keyboard package before installing the new package.' >&2
+    sudo apt purge -y kannada-nudi-linux-keyboard
+fi
+
 if dpkg-query -W -f='${Status}' kannada-nudi 2>/dev/null | grep -q 'install ok installed'; then
     echo 'Removing existing kannada-nudi package before reinstalling the new package.' >&2
     sudo apt purge -y kannada-nudi
