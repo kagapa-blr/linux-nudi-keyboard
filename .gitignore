@@ -10,7 +10,7 @@
 # Debian packaging generated files
 /debian/.debhelper/
 /debian/*
-/debian/kannada-nudi-linux-keyboard/
+/debian/kannada-nudi/
 /debian/*debhelper.log
 /debian/*.substvars
 /debian/debhelper-build-stamp

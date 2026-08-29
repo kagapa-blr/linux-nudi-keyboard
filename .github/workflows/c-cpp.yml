@@ -67,7 +67,7 @@ jobs:
           author_email="${GITHUB_ACTOR:-github-actions[bot]}@users.noreply.github.com"
 
           {
-            printf '%s\n' "kannada-nudi-linux-keyboard (${debian_version}) unstable; urgency=medium"
+            printf '%s\n' "kannada-nudi (${debian_version}) unstable; urgency=medium"
             printf '\n'
             printf '  * Release %s.\n' "$next_tag"
             printf '\n'
@@ -85,7 +85,7 @@ jobs:
         shell: bash
         run: |
           dpkg-buildpackage -us -uc -b
-          package_path=$(ls ../kannada-nudi-linux-keyboard_${{ steps.version.outputs.debian_version }}_amd64.deb)
+          package_path=$(ls ../kannada-nudi_${{ steps.version.outputs.debian_version }}_amd64.deb)
           mkdir -p build-artifacts
           cp "$package_path" build-artifacts/
           ls -l build-artifacts
@@ -93,7 +93,7 @@ jobs:
       - name: Upload Debian artifact
         uses: actions/upload-artifact@v5
         with:
-          name: kannada-nudi-linux-keyboard-deb
+          name: kannada-nudi-deb
           path: build-artifacts/*.deb
 
   release:
@@ -111,7 +111,7 @@ jobs:
       - name: Download Debian artifact
         uses: actions/download-artifact@v5
         with:
-          name: kannada-nudi-linux-keyboard-deb
+          name: kannada-nudi-deb
           path: dist
 
       - name: Create git tag if needed

@@ -7,28 +7,40 @@ This guide explains how to download, install, enable, and use the Kannada Nudi k
 Go to the project's GitHub Releases page and download the latest Debian package, for example:
 
 ```sh
-kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
+kannada-nudi_1.0.0-1_amd64.deb
 ```
 
 You can also use a local `.deb` file if you are testing a build on your machine.
 
 ## 2. Install the package
 
-Open a terminal and install the downloaded file:
+If an older legacy package called `kannada-nudi` is still installed, remove it first:
 
 ```sh
-sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
+sudo apt purge -y kannada-nudi
+```
+
+Then install the downloaded file:
+
+```sh
+sudo apt install ./kannada-nudi_1.0.0-1_amd64.deb
 ```
 
 If the file is in another folder, use the full path instead:
 
 ```sh
-sudo apt install /path/to/kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
+sudo apt install /path/to/kannada-nudi_1.0.0-1_amd64.deb
 ```
 
-## 3. Restart IBus
+## 3. Start or restart IBus
 
-After installing, restart the input method service:
+After installing, make sure the user IBus daemon is running in your session:
+
+```sh
+ibus-daemon --panel disable --xim --daemonize
+```
+
+If the daemon is already up, this is also safe:
 
 ```sh
 ibus restart
@@ -95,8 +107,8 @@ Then add it again from Settings → Keyboard → Input Sources.
 If it still does not appear, reinstall the package:
 
 ```sh
-sudo apt install --reinstall ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
-ibus restart
+sudo apt install --reinstall ./kannada-nudi_1.0.0-1_amd64.deb
+ibus-daemon --panel disable --xim --daemonize
 ```
 
 ## 8. How to stop using it

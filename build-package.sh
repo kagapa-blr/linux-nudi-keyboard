@@ -51,7 +51,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 dpkg-buildpackage -us -uc -b
 
-package_path=$(dirname "$project_dir")/kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
+package_path=$(dirname "$project_dir")/kannada-nudi_1.0.0-1_amd64.deb
 printf '%s\n' "Package written to $package_path"
 if "$install_package"; then
 	"$project_dir/install.sh" "$package_path"

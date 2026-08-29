@@ -36,8 +36,8 @@ End users do not need C++, CMake, headers, or development tools. They download
 the `.deb` release and install it with Ubuntu's package manager:
 
 ```sh
-sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
-ibus restart
+sudo apt install ./kannada-nudi_1.0.0-1_amd64.deb
+ibus-daemon --panel disable --xim --daemonize
 ```
 
 The package declares only runtime requirements. Ubuntu resolves the linked
@@ -82,7 +82,7 @@ The package is written one directory above the repository. Inspect its runtime
 dependencies before installing it:
 
 ```sh
-dpkg-deb -I ../kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb | sed -n '/Package:/p;/Version:/p;/Architecture:/p;/Depends:/p'
+dpkg-deb -I ../kannada-nudi_1.0.0-1_amd64.deb | sed -n '/Package:/p;/Version:/p;/Architecture:/p;/Depends:/p'
 ```
 
 ## Updating the keyboard

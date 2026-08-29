@@ -1,4 +1,4 @@
-kannada-nudi-linux-keyboard (1.0.0-1) unstable; urgency=medium
+kannada-nudi (1.0.0-1) unstable; urgency=medium
 
   * Initial IBus implementation of the Kannada Nudi keyboard.
 

@@ -8,14 +8,26 @@ applications.
 
 1. Open the latest GitHub Release.
 2. Download the Debian package, for example:
-   `kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb`
-3. Install it:
+   `kannada-nudi_1.0.0-1_amd64.deb`
+3. If an older `kannada-nudi` package is still installed, remove it first:
 
 ```sh
-sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
+sudo apt purge -y kannada-nudi
 ```
 
-4. Restart IBus:
+4. Install it:
+
+```sh
+sudo apt install ./kannada-nudi_1.0.0-1_amd64.deb
+```
+
+4. Ensure the user IBus daemon is running:
+
+```sh
+ibus-daemon --panel disable --xim --daemonize
+```
+
+If you already have a session running, you can also use:
 
 ```sh
 ibus restart
@@ -53,8 +65,8 @@ This works in supported Linux apps as a standard IBus input method.
 If you are testing a local build instead of a GitHub release, install it the same way:
 
 ```sh
-sudo apt install ./kannada-nudi-linux-keyboard_1.0.0-1_amd64.deb
-ibus restart
+sudo apt install ./kannada-nudi_1.0.0-1_amd64.deb
+ibus-daemon --panel disable --xim --daemonize
 ```
 
 ## Launch the built-in editor
