@@ -52,10 +52,15 @@ cmake --build build --parallel
 dpkg-buildpackage -us -uc -b
 
 package_path=$(dirname "$project_dir")/kannada-nudi_1.0.0-1_amd64.deb
-printf '%s\n' "Package written to $package_path"
+version_no=$(dpkg-parsechangelog -S Version | sed 's/-.*$//')
+release_package=$(dirname "$project_dir")/kannada-nudi_${version_no}_amd64.deb
+if [ -f "$package_path" ] && [ "$package_path" != "$release_package" ]; then
+    cp "$package_path" "$release_package"
+fi
+printf '%s\n' "Package written to $release_package"
 if "$install_package"; then
-	"$project_dir/install.sh" "$package_path"
+	"$project_dir/install.sh" "$release_package"
 else
-	printf '%s\n' "Install it with: sudo apt install $package_path"
+	printf '%s\n' "Install it with: sudo apt install $release_package"
 	printf '%s\n' 'Then run install.sh or restart IBus as the desktop user and select Kannada Nudi.'
 fi

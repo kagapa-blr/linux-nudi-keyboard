@@ -12,7 +12,7 @@ if [ -z "$package" ]; then
     package=$(find "$(dirname "$0")/.." -maxdepth 1 -type f -name 'kannada-nudi_*.deb' -print -quit)
 fi
 if [ -z "$package" ] || [ ! -f "$package" ]; then
-    echo "Usage: $0 /path/to/kannada-nudi_VERSION_amd64.deb" >&2
+    echo "Usage: $0 /path/to/kannada-nudi_1.0.0_amd64.deb" >&2
     exit 2
 fi
 

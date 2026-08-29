@@ -8,7 +8,7 @@ applications.
 
 1. Open the latest GitHub Release.
 2. Download the Debian package, for example:
-   `kannada-nudi_1.0.0-1_amd64.deb`
+   `kannada-nudi_1.0.0_amd64.deb`
 3. If an older `kannada-nudi` package is still installed, remove it first:
 
 ```sh
@@ -18,7 +18,7 @@ sudo apt purge -y kannada-nudi
 4. Install it:
 
 ```sh
-sudo apt install ./kannada-nudi_1.0.0-1_amd64.deb
+sudo apt install ./kannada-nudi_1.0.0_amd64.deb
 ```
 
 4. Ensure the user IBus daemon is running:

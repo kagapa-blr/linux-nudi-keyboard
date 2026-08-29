@@ -17,6 +17,7 @@ jobs:
     outputs:
       next_tag: ${{ steps.version.outputs.next_tag }}
       debian_version: ${{ steps.version.outputs.debian_version }}
+      semantic_version: ${{ steps.version.outputs.semantic_version }}
 
     steps:
       - name: Checkout repository
@@ -62,7 +63,8 @@ jobs:
             exit 1
           fi
 
-          debian_version="${next_tag#v}-1"
+          semantic_version="${next_tag#v}"
+          debian_version="${semantic_version}-1"
           author_name="${GITHUB_ACTOR:-GitHub Actions}"
           author_email="${GITHUB_ACTOR:-github-actions[bot]}@users.noreply.github.com"
 
@@ -78,16 +80,19 @@ jobs:
 
           echo "next_tag=$next_tag" >> "$GITHUB_OUTPUT"
           echo "debian_version=$debian_version" >> "$GITHUB_OUTPUT"
+          echo "semantic_version=$semantic_version" >> "$GITHUB_OUTPUT"
           echo "Release tag: $next_tag"
           echo "Debian package version: $debian_version"
+          echo "Release asset version: $semantic_version"
 
       - name: Build Debian package
         shell: bash
         run: |
           dpkg-buildpackage -us -uc -b
           package_path=$(ls ../kannada-nudi_${{ steps.version.outputs.debian_version }}_amd64.deb)
+          artifact_path="build-artifacts/kannada-nudi_${{ steps.version.outputs.semantic_version }}_amd64.deb"
           mkdir -p build-artifacts
-          cp "$package_path" build-artifacts/
+          cp "$package_path" "$artifact_path"
           ls -l build-artifacts
 
       - name: Upload Debian artifact
