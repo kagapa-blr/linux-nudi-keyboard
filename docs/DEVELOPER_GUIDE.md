@@ -225,6 +225,15 @@ echo "$XDG_SESSION_TYPE"
 echo "$GTK_IM_MODULE/$QT_IM_MODULE"
 ```
 
+The runtime default is `ಅ`, which supports compact input such as `knk` for
+`ಕನಕ`. To test the explicit-vowel reference mode, start the engine or editor
+with `NUDI_DEFAULT_VOWEL=virama`; then `kanaka` produces `ಕನಕ`:
+
+```sh
+NUDI_DEFAULT_VOWEL=virama ./build/nudi-editor
+NUDI_DEFAULT_VOWEL=virama ibus-daemon --panel disable --xim --replace --daemonize
+```
+
 The package installs the engine in `/usr/libexec` and component metadata in
 `/usr/share/ibus/component`. IBus launches the process on demand as a
 user-session background service.
