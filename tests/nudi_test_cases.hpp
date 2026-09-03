@@ -36,6 +36,7 @@ struct KeyTestCase
     char key;
 
     bool shift = false;
+    bool caps_lock = false;
     bool alt = false;
     bool ctrl = false;
     bool scroll_lock = false;

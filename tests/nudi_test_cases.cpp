@@ -25,6 +25,41 @@ const std::vector<ReferenceTestCase> &reference_test_cases()
             "ಕನಕ"
         },
 
+        {
+            "WORD-003",
+            "rF conjunct",
+            "rFk",
+            "ರ‍್ಕ"
+        },
+
+        {
+            "WORD-004",
+            "ordinary r conjunct",
+            "rfk",
+            "ರ್ಕ"
+        },
+
+        {
+            "WORD-005",
+            "rF conjunct after vowel",
+            "arFk",
+            "ಅರ‍್ಕ"
+        },
+
+        {
+            "WORD-006",
+            "ordinary r conjunct after vowel",
+            "arfk",
+            "ಅರ್ಕ"
+        },
+
+        {
+            "WORD-007",
+            "mantri",
+            "mMtfri",
+            "ಮಂತ್ರಿ"
+        },
+
   
 
     };
@@ -68,9 +103,10 @@ const std::vector<KeyTestCase> &key_test_cases()
             'a',
             true,
             true,
-            false,
-            false,
             true,
+            false,
+            false,
+            false,
             "ೱ"
         },
 
@@ -80,9 +116,10 @@ const std::vector<KeyTestCase> &key_test_cases()
             'z',
             true,
             true,
-            false,
-            false,
             true,
+            false,
+            false,
+            false,
             "ೲ"
         }
     };

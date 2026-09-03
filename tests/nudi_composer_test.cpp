@@ -172,22 +172,26 @@ private:
 // Uppercase ASCII = Shift + key
 // ============================================================
 
-void feed_reference(
+std::string feed_reference(
     nudi::Composer &composer,
     const std::string &input)
 {
+    std::string committed;
+
     for (char key : input)
     {
         const bool shifted =
             key >= 'A' &&
             key <= 'Z';
 
-        composer.feed(
+        committed += composer.feed(
             shifted
                 ? static_cast<char>(key - 'A' + 'a')
                 : key,
             shifted);
     }
+
+    return committed + composer.preedit();
 }
 
 
@@ -207,7 +211,8 @@ void run_reference_tests(
     {
         composer.reset();
 
-        feed_reference(
+        const std::string actual =
+            feed_reference(
             composer,
             test.input);
 
@@ -217,7 +222,7 @@ void run_reference_tests(
             test.name,
             test.input,
             test.expected,
-            composer.preedit());
+            actual);
     }
 }
 
@@ -242,10 +247,10 @@ void run_key_tests(
             composer.feed(
                 test.key,
                 test.shift,
-                test.alt,
+                test.caps_lock,
                 test.ctrl,
-                test.scroll_lock,
-                test.num_lock);
+                test.num_lock,
+                test.alt);
 
 
         std::string input;
@@ -386,7 +391,8 @@ void run_default_vowel_tests(
     const std::string input =
         "kanaka";
 
-    feed_reference(
+    const std::string actual =
+        feed_reference(
         composer,
         input);
 
@@ -396,7 +402,7 @@ void run_default_vowel_tests(
         "Default vowel = Virama",
         input,
         "ಕನಕ",
-        composer.preedit());
+        actual);
 
 
     composer.set_default_vowel(

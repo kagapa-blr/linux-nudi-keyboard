@@ -693,6 +693,17 @@ namespace nudi
             key == 'f' &&
             consonant_pending_)
         {
+            if (shifted)
+            {
+                text_ += zwj_virama;
+
+                consonant_pending_ = false;
+                virama_pending_ = true;
+                explicit_virama_ = true;
+
+                return {};
+            }
+
             if (default_vowel_ == DefaultVowel::Virama &&
                 !virama_pending_ &&
                 text_.size() >= std::string(virama).size() &&
@@ -776,7 +787,9 @@ namespace nudi
             {
                 text_ += "ಂ";
 
-                reset();
+                consonant_pending_ = false;
+                virama_pending_ = false;
+                explicit_virama_ = false;
 
                 return {};
             }
