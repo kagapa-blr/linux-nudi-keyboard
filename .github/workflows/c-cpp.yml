@@ -113,10 +113,70 @@ jobs:
           name: kannada-nudi-deb
           path: build-artifacts/*.deb
 
+  build-rpm:
+    name: Build RPM package
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y \
+            cmake \
+            gcc-c++ \
+            glib2-devel \
+            gtk3-devel \
+            ibus-devel \
+            pkgconf-pkg-config \
+            rpm-build
+
+      - name: Prepare versioned source archive
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ needs.build.outputs.semantic_version }}
+        run: |
+          sed -i -E "s/(project\\(kannada-nudi VERSION )[0-9]+\\.[0-9]+\\.[0-9]+/\\1${RELEASE_VERSION}/" CMakeLists.txt
+          sed -i -E "s#(<version>)[0-9]+\\.[0-9]+\\.[0-9]+(</version>)#\\1${RELEASE_VERSION}\\2#" com.example.Nudi.xml
+
+          mkdir -p "$HOME/rpmbuild/SOURCES"
+          tar -czf "$HOME/rpmbuild/SOURCES/kannada-nudi-${RELEASE_VERSION}.tar.gz" \
+            --transform="s,^linux-nudi-keyboard,kannada-nudi-${RELEASE_VERSION}," \
+            --exclude-vcs \
+            -C .. \
+            linux-nudi-keyboard
+
+      - name: Build RPM package
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ needs.build.outputs.semantic_version }}
+        run: |
+          rpmbuild -bb \
+            --define "nudi_version ${RELEASE_VERSION}" \
+            "$GITHUB_WORKSPACE/packaging/kannada-nudi.spec"
+
+          mkdir -p build-artifacts
+          rpm_path=$(find "$HOME/rpmbuild/RPMS" \
+            -type f \
+            -name "kannada-nudi-${RELEASE_VERSION}-*.rpm" \
+            -print -quit)
+          test -n "$rpm_path"
+          cp "$rpm_path" \
+            "build-artifacts/kannada-nudi-${RELEASE_VERSION}_x86_64.rpm"
+
+      - name: Upload RPM artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: kannada-nudi-rpm
+          path: build-artifacts/*.rpm
+
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, build-rpm]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
@@ -129,6 +189,12 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: kannada-nudi-deb
+          path: dist
+
+      - name: Download RPM artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: kannada-nudi-rpm
           path: dist
 
       - name: Create git tag if needed
@@ -144,7 +210,7 @@ jobs:
           git push origin "$tag"
           echo "Release tag is $tag"
 
-      - name: Publish Debian package to GitHub Release
+      - name: Publish packages to GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -157,5 +223,5 @@ jobs:
           fi
           gh release create "$tag" \
             --title "$tag" \
-            --notes "Kannada Nudi Linux Keyboard Debian package release for Ubuntu." \
-            dist/*.deb
+            --notes "Kannada Nudi Linux Keyboard packages for Debian/Ubuntu and Fedora-compatible Linux distributions." \
+            dist/*

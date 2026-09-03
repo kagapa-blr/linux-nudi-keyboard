@@ -32,11 +32,18 @@ different sequences look similar.
 
 ### End users
 
-End users do not need C++, CMake, headers, or development tools. They download
-the `.deb` release and install it with Ubuntu's package manager:
+End users do not need C++, CMake, headers, or development tools. Debian-based
+users download the `.deb` release and install it with Ubuntu's package manager:
 
 ```sh
 sudo apt install ./kannada-nudi_1.0.0_amd64.deb
+ibus-daemon --panel disable --xim --daemonize
+```
+
+Fedora and other RPM-based users download the `.rpm` release artifact and install it with:
+
+```sh
+sudo dnf install ./kannada-nudi-1.0.0_x86_64.rpm
 ibus-daemon --panel disable --xim --daemonize
 ```
 

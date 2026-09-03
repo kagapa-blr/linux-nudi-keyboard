@@ -7,8 +7,9 @@ applications.
 ## Download and install
 
 1. Open the latest GitHub Release.
-2. Download the Debian package, for example:
-	`kannada-nudi_1.0.0_amd64.deb`
+2. Download the package for your distribution:
+	- Debian, Ubuntu, and Linux Mint: `kannada-nudi_1.0.0_amd64.deb`
+	- Fedora and other RPM-based distributions: `kannada-nudi-1.0.0_x86_64.rpm`
 3. If an older `kannada-nudi` package is still installed, remove it first:
 
 ```sh
@@ -19,6 +20,12 @@ sudo apt purge -y kannada-nudi
 
 ```sh
 sudo apt install ./kannada-nudi_1.0.0_amd64.deb
+```
+
+On Fedora or another RPM-based distribution, install the RPM with:
+
+```sh
+sudo dnf install ./kannada-nudi-1.0.0_x86_64.rpm
 ```
 
 4. Ensure the user IBus daemon is running:
