@@ -290,7 +290,7 @@ show_menu() {
     printf '        Kannada Nudi Development\n'
     printf '========================================\n'
     printf '\n'
-    printf '1) Build\n'
+    printf '1) Build & Package\n'
     printf '2) Build & Run\n'
     printf '3) Test\n'
     printf '4) Uninstall\n'
@@ -309,6 +309,7 @@ case "${1:-}" in
             1)
                 install_dependencies
                 build_project
+                create_package
                 ;;
             2)
                 build_and_run
@@ -340,6 +341,7 @@ case "${1:-}" in
     build)
         install_dependencies
         build_project
+        create_package
         ;;
 
     run)

@@ -175,7 +175,7 @@ jobs:
 
   build-windows:
     name: Build Windows executable
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: build
 
     steps:

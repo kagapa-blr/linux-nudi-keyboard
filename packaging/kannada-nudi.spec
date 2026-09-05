@@ -36,6 +36,8 @@ DESTDIR=%{buildroot} cmake --install build-rpm
 %{_bindir}/nudi-editor
 %{_libexecdir}/ibus-engine-nudi
 %{_datadir}/ibus/component/com.example.Nudi.xml
+%{_datadir}/applications/nudi.desktop
+%{_datadir}/icons/hicolor/128x128/apps/nudi.png
 
 %changelog
 * Thu Sep 03 2026 Nudi Linux contributors <nudi@example.invalid> - 1.0.0-1
