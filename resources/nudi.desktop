@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Nudi Kannada
+Comment=Kannada Nudi keyboard and editor
+Exec=/usr/bin/nudi-editor
+Icon=nudi
+Terminal=false
+Type=Application
+Categories=Utility;Education;TextEditor;
+Keywords=Kannada;Keyboard;Input;Editor;
+StartupNotify=true

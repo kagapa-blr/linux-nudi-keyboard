@@ -8,6 +8,12 @@
 namespace
 {
 
+    int &editor_window_count()
+    {
+        static int count = 0;
+        return count;
+    }
+
     struct Editor
     {
         GtkWidget *window;
@@ -80,20 +86,170 @@ namespace
         return TRUE;
     }
 
-    void on_start_engine(GtkButton *, Editor *editor)
+    std::string trim_copy(const std::string &value)
+    {
+        const std::size_t start = value.find_first_not_of(" \t\r\n");
+        if (start == std::string::npos)
+        {
+            return {};
+        }
+
+        const std::size_t end = value.find_last_not_of(" \t\r\n");
+        return value.substr(start, end - start + 1);
+    }
+
+    bool run_ibus_command(const std::string &command, std::string *output = nullptr)
     {
         GError *error = nullptr;
-        const gboolean started = g_spawn_command_line_async(
-            "systemctl --user restart org.freedesktop.IBus.session.GNOME.service", &error);
-        if (started)
+        gint exit_status = 0;
+        gchar *stdout = nullptr;
+        gchar *stderr = nullptr;
+
+        const gboolean ok = g_spawn_command_line_sync(
+            command.c_str(),
+            &stdout,
+            &stderr,
+            &exit_status,
+            &error);
+
+        if (stdout != nullptr)
         {
-            gtk_label_set_text(GTK_LABEL(editor->status), "Nudi engine restarted in background");
+            if (output != nullptr)
+            {
+                *output = stdout;
+            }
+            g_free(stdout);
         }
-        else
+
+        if (stderr != nullptr)
         {
-            gtk_label_set_text(GTK_LABEL(editor->status), error->message);
+            g_free(stderr);
+        }
+
+        if (error != nullptr)
+        {
             g_error_free(error);
+            return false;
         }
+
+        return ok && exit_status == 0;
+    }
+
+    bool wait_for_ibus_ready(int retries)
+    {
+        for (int attempt = 0; attempt < retries; ++attempt)
+        {
+            std::string output;
+            if (run_ibus_command("ibus list-engine", &output))
+            {
+                return true;
+            }
+            g_usleep(250000);
+        }
+
+        return false;
+    }
+
+    bool ibus_has_nudi_engine()
+    {
+        std::string output;
+        if (!run_ibus_command("ibus list-engine", &output))
+        {
+            return false;
+        }
+
+        return output.find("nudi") != std::string::npos;
+    }
+
+    bool is_active_engine_nudi()
+    {
+        std::string output;
+        if (!run_ibus_command("ibus engine", &output))
+        {
+            return false;
+        }
+
+        return trim_copy(output) == "nudi";
+    }
+
+    void ensure_ibus_session(Editor *editor)
+    {
+        if (editor != nullptr)
+        {
+            gtk_label_set_text(GTK_LABEL(editor->status), "Checking IBus...");
+        }
+
+        if (!ibus_has_nudi_engine())
+        {
+            if (!run_ibus_command("ibus-daemon --panel disable --xim --daemonize --replace"))
+            {
+                if (editor != nullptr)
+                {
+                    gtk_label_set_text(GTK_LABEL(editor->status), "Failed to start IBus");
+                }
+                return;
+            }
+
+            if (!wait_for_ibus_ready(20))
+            {
+                if (editor != nullptr)
+                {
+                    gtk_label_set_text(GTK_LABEL(editor->status), "IBus is still unavailable");
+                }
+                return;
+            }
+        }
+
+        if (!is_active_engine_nudi())
+        {
+            if (!run_ibus_command("ibus engine nudi"))
+            {
+                if (editor != nullptr)
+                {
+                    gtk_label_set_text(GTK_LABEL(editor->status), "Nudi could not be activated");
+                }
+                return;
+            }
+        }
+
+        if (editor != nullptr)
+        {
+            gtk_label_set_text(GTK_LABEL(editor->status), "Nudi system engine active");
+        }
+    }
+
+    void shutdown_ibus_session()
+    {
+        if (editor_window_count() > 0)
+        {
+            return;
+        }
+
+        run_ibus_command("ibus exit");
+    }
+
+    void on_start_engine(GtkButton *, Editor *editor)
+    {
+        ensure_ibus_session(editor);
+    }
+
+    gboolean on_window_delete_event(GtkWidget *widget, GdkEvent *, Editor *editor)
+    {
+        (void)editor;
+
+        if (editor_window_count() > 0)
+        {
+            editor_window_count()--;
+        }
+
+        if (editor_window_count() <= 0)
+        {
+            editor_window_count() = 0;
+            shutdown_ibus_session();
+        }
+
+        gtk_widget_destroy(widget);
+        return TRUE;
     }
 
     void on_activate(GtkApplication *application, gpointer)
@@ -132,9 +288,14 @@ namespace
 
         g_signal_connect(editor->view, "key-press-event", G_CALLBACK(on_key_press), editor);
         g_signal_connect(start, "clicked", G_CALLBACK(on_start_engine), editor);
+        g_signal_connect(editor->window, "delete-event", G_CALLBACK(on_window_delete_event), editor);
         g_object_set_data_full(G_OBJECT(editor->window), "nudi-editor", editor,
                                [](gpointer data)
                                { delete static_cast<Editor *>(data); });
+
+        editor_window_count()++;
+        ensure_ibus_session(editor);
+
         gtk_widget_show_all(editor->window);
         gtk_widget_grab_focus(editor->view);
     }

@@ -128,8 +128,29 @@ Install build dependencies and build the package:
 ```sh
 sudo apt install build-essential cmake debhelper-compat \
 	libglib2.0-dev libgtk-3-dev libibus-1.0-dev pkg-config ibus
-./build-package.sh
+./build-linux-package.sh
 ```
+
+The script also supports the following development commands:
+
+```sh
+./build-linux-package.sh test       # build from the current tree and run CTest
+./build-linux-package.sh clean      # remove build/ and output/
+./build-linux-package.sh uninstall  # purge the installed Debian package
+./build-linux-package.sh reinstall  # uninstall, clean, rebuild, test, install
+```
+
+The `test` command runs every test registered with CTest, including the
+composer tests and the IBus registration contract check.
+
+On Windows, use PowerShell to build and test the console executable:
+
+```powershell
+.\build-windows.ps1 -Configuration Release -Clean
+```
+
+The Windows script writes `build-artifacts/kannada-nudi-windows-Release.zip`,
+containing `nudi-windows.exe` and the Windows composer test executable.
 
 `win-nudi-keyboard.ahk` remains the behavior reference. The Linux port currently
 covers the base consonants, independent vowels, vowel signs, virama/conjunct

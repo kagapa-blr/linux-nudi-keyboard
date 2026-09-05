@@ -173,10 +173,29 @@ jobs:
           name: kannada-nudi-rpm
           path: build-artifacts/*.rpm
 
+  build-windows:
+    name: Build Windows executable
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Build and test Windows executable
+        shell: pwsh
+        run: .\build-windows.ps1 -Configuration Release -Clean
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: kannada-nudi-windows
+          path: build-artifacts/*.zip
+
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [build, build-rpm]
+    needs: [build, build-rpm, build-windows]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
@@ -195,6 +214,12 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: kannada-nudi-rpm
+          path: dist
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: kannada-nudi-windows
           path: dist
 
       - name: Create git tag if needed
@@ -223,5 +248,5 @@ jobs:
           fi
           gh release create "$tag" \
             --title "$tag" \
-            --notes "Kannada Nudi Linux Keyboard packages for Debian/Ubuntu and Fedora-compatible Linux distributions." \
+            --notes "Kannada Nudi Keyboard packages for Debian/Ubuntu, Fedora-compatible Linux distributions, and Windows." \
             dist/*

@@ -3,8 +3,8 @@ set -eu
 
 repo_root="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 
-if ! grep -q 'ibus_bus_register_component' "$repo_root/src/ibus_engine.cpp"; then
-  echo 'Missing IBus component registration in src/ibus_engine.cpp' >&2
+if ! grep -q 'ibus_bus_register_component' "$repo_root/src/platform/linux/ibus_engine.cpp"; then
+  echo 'Missing IBus component registration in src/platform/linux/ibus_engine.cpp' >&2
   exit 1
 fi
 

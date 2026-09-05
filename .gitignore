@@ -2,6 +2,7 @@
 /build/
 /obj-*/
 /cmake-build-*/
+/build-windows/
 /CMakeFiles/
 /CMakeCache.txt
 /CTestTestfile.cmake

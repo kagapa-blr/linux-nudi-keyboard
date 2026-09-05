@@ -84,7 +84,7 @@ runs the tests, creates and installs the `.deb`, restarts IBus, waits for the
 engine to register, and selects Nudi:
 
 ```sh
-./build-package.sh
+./build-linux-package.sh
 ```
 
 The package and related Debian artifacts are written to the repository's
@@ -107,7 +107,7 @@ dpkg-deb -I output/kannada-nudi_1.0.0_amd64.deb | sed -n '/Package:/p;/Version:/
   GitHub Actions release workflow increments the patch number, updates
   `debian/changelog`, `CMakeLists.txt`, and `com.example.Nudi.xml`, then creates
   the matching tag and `.deb` release asset.
-4. Run the complete local checks, or use `./build-package.sh` for the full local
+4. Run the complete local checks, or use `./build-linux-package.sh` for the full local
   build-and-run flow:
 
 ```sh
